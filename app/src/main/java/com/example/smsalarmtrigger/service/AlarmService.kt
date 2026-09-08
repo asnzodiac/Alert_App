@@ -31,7 +31,6 @@ class AlarmService : Service() {
         const val TAG = "AlarmService"
         const val ACTION_START_ALARM = "com.example.smsalarmtrigger.ACTION_START_ALARM"
         const val ACTION_STOP_ALARM = "com.example.smsalarmtrigger.ACTION_STOP_ALARM"
-
         const val EXTRA_KEYWORD = "extra_keyword"
         const val EXTRA_SENDER = "extra_sender"
         const val EXTRA_MESSAGE = "extra_message"
@@ -52,7 +51,6 @@ class AlarmService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action ?: ACTION_START_ALARM
-
         when (action) {
             ACTION_START_ALARM -> {
                 val keyword = intent?.getStringExtra(EXTRA_KEYWORD) ?: "ALARM"
@@ -71,24 +69,17 @@ class AlarmService : Service() {
                     }
                 }
             }
-
             ACTION_STOP_ALARM -> {
                 stopAlarm()
             }
         }
-
         return START_STICKY
     }
 
     private fun startForegroundWithNotification(sender: String, keyword: String) {
         val notification = NotificationHelper.buildAlarmNotification(this, sender, keyword)
-        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val foregroundServiceType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-            } else {
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-            }
+            val foregroundServiceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
             ServiceCompat.startForeground(
                 this,
                 NotificationHelper.NOTIFICATION_ID,
@@ -108,7 +99,7 @@ class AlarmService : Service() {
                 "SMSAlarmTrigger::AlarmWakeLock"
             ).apply {
                 setReferenceCounted(false)
-                acquire(10 * 60 * 1000L) // 10 min fallback timeout
+                acquire(10 * 60 * 1000L)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to acquire wake lock", e)
@@ -127,18 +118,12 @@ class AlarmService : Service() {
 
     private fun startAlarmSound() {
         if (mediaPlayer?.isPlaying == true) return
-
         try {
-            var alarmUri: Uri? = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            if (alarmUri == null) {
-                alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-            }
-            if (alarmUri == null) {
-                alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-            }
+            val alarmUri: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
             mediaPlayer = MediaPlayer().apply {
-                setDataSource(applicationContext, alarmUri!!)
+                setDataSource(applicationContext, alarmUri)
                 setAudioAttributes(
                     AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_ALARM)
@@ -164,12 +149,9 @@ class AlarmService : Service() {
                 @Suppress("DEPRECATION")
                 getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
             }
-
             val pattern = longArrayOf(0, 800, 400, 800, 400)
-            val amplitudes = intArrayOf(0, 255, 0, 255, 0)
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val effect = VibrationEffect.createWaveform(pattern, amplitudes, 0)
+                val effect = VibrationEffect.createWaveform(pattern, 0)
                 vibrator?.vibrate(effect)
             } else {
                 @Suppress("DEPRECATION")
@@ -190,14 +172,12 @@ class AlarmService : Service() {
         } catch (e: Exception) {
             Log.e(TAG, "Error releasing MediaPlayer", e)
         }
-
         try {
             vibrator?.cancel()
             vibrator = null
         } catch (e: Exception) {
             Log.e(TAG, "Error stopping vibrator", e)
         }
-
         try {
             if (wakeLock?.isHeld == true) {
                 wakeLock?.release()
@@ -205,18 +185,15 @@ class AlarmService : Service() {
         } catch (e: Exception) {
             Log.e(TAG, "Error releasing wake lock", e)
         }
-
         serviceScope.launch {
             preferencesManager.setAlarmActive(false)
         }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
         } else {
             @Suppress("DEPRECATION")
             stopForeground(true)
         }
-
         stopSelf()
     }
 
