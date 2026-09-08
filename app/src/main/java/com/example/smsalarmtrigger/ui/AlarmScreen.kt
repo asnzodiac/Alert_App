@@ -41,14 +41,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -93,9 +91,9 @@ fun AlarmScreen(
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.04f,
+        targetValue = 1.03f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 600, easing = FastOutSlowInEasing),
+            animation = tween(durationMillis = 500, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "alarmScale"
@@ -108,25 +106,25 @@ fun AlarmScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
-                                .size(12.dp)
+                                .size(10.dp)
                                 .background(
-                                    if (settings.isAlarmActive) Color(0xFFDC2626)
-                                    else if (settings.isEnabled) Color(0xFF16A34A)
-                                    else Color(0xFF9CA3AF),
+                                    if (settings.isAlarmActive) Color(0xFFEF4444)
+                                    else if (settings.isEnabled) Color(0xFF22C55E)
+                                    else Color(0xFF6B7280),
                                     CircleShape
                                 )
                         )
-                        Spacer(modifier = Modifier.width(10.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = stringResource(R.string.app_name),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 18.sp
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -136,58 +134,57 @@ fun AlarmScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
-            // 1. ACTIVE ALARM BANNER (Visible when ringing)
+            // EMERGENCY RINGING OVERLAY BANNER
             AnimatedVisibility(visible = settings.isAlarmActive) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .scale(pulseScale),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFBA1A1A))
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF991B1B))
                 ) {
                     Column(
-                        modifier = Modifier.padding(20.dp),
+                        modifier = Modifier.padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
                             imageVector = Icons.Default.Warning,
-                            contentDescription = "Alert",
+                            contentDescription = null,
                             tint = Color.White,
-                            modifier = Modifier.size(44.dp)
+                            modifier = Modifier.size(48.dp)
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = stringResource(R.string.active_alarm_warning),
+                            text = "ALARM ACTIVE & RINGING",
                             color = Color.White,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 18.sp
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp
                         )
                         Text(
-                            text = "Loud alarm is looping on STREAM_ALARM with maximum volume & vibration.",
-                            color = Color.White.copy(alpha = 0.9f),
+                            text = "Max volume override active. Tap below to dismiss.",
+                            color = Color.White.copy(alpha = 0.8f),
                             fontSize = 13.sp,
-                            modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
+                            modifier = Modifier.padding(top = 4.dp, bottom = 18.dp)
                         )
                         Button(
                             onClick = onStopAlarm,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(56.dp),
-                            shape = RoundedCornerShape(12.dp),
+                                .height(52.dp),
+                            shape = RoundedCornerShape(14.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.White,
-                                contentColor = Color(0xFFBA1A1A)
+                                contentColor = Color(0xFF991B1B)
                             )
                         ) {
-                            Icon(Icons.Default.Stop, contentDescription = null, modifier = Modifier.size(24.dp))
+                            Icon(Icons.Default.Stop, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = stringResource(R.string.stop_alarm_button),
-                                fontSize = 18.sp,
+                                text = "SILENCE ALARM",
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -195,13 +192,12 @@ fun AlarmScreen(
                 }
             }
 
-            // 2. MAIN ACTIVATION TOGGLE CARD
+            // MASTER CONTROL CARD
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (settings.isEnabled) MaterialTheme.colorScheme.primaryContainer
-                    else MaterialTheme.colorScheme.surfaceVariant
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 )
             ) {
                 Row(
@@ -219,231 +215,163 @@ fun AlarmScreen(
                             imageVector = if (settings.isEnabled) Icons.Default.NotificationsActive else Icons.Default.Alarm,
                             contentDescription = null,
                             tint = if (settings.isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
-                            modifier = Modifier.size(36.dp)
+                            modifier = Modifier.size(32.dp)
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
                             Text(
-                                text = if (settings.isEnabled) stringResource(R.string.service_status_enabled)
-                                else stringResource(R.string.service_status_disabled),
+                                text = if (settings.isEnabled) "Service Online" else "Service Paused",
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 17.sp,
-                                color = if (settings.isEnabled) MaterialTheme.colorScheme.onPrimaryContainer
-                                else MaterialTheme.colorScheme.onSurfaceVariant
+                                fontSize = 16.sp
                             )
                             Text(
-                                text = if (settings.isEnabled) "Actively scanning incoming SMS in background"
-                                else "Background SMS monitoring paused",
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                                text = if (settings.isEnabled) "Listening for incoming trigger text" else "SMS listener is currently inactive",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                     Switch(
                         checked = settings.isEnabled,
-                        onCheckedChange = onToggleEnabled,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = MaterialTheme.colorScheme.primary,
-                            checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
-                        )
+                        onCheckedChange = onToggleEnabled
                     )
                 }
             }
 
-            // 3. TRIGGER CONFIGURATION CARD
+            // CONFIGURATION INPUTS CARD
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(20.dp)
             ) {
-                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
                     Text(
-                        text = "Trigger Configuration",
+                        text = "Trigger Rules",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp
+                        fontSize = 16.sp
                     )
-
-                    // Keyword field
                     OutlinedTextField(
                         value = keywordInput,
                         onValueChange = {
                             keywordInput = it
                             onKeywordChanged(it)
                         },
-                        label = { Text(stringResource(R.string.trigger_keyword_label)) },
-                        placeholder = { Text(stringResource(R.string.trigger_keyword_placeholder)) },
-                        supportingText = { Text(stringResource(R.string.trigger_keyword_helper)) },
+                        label = { Text("Keyword Phrase") },
+                        supportingText = { Text("Case-insensitive match inside SMS text") },
                         leadingIcon = { Icon(Icons.Default.Key, contentDescription = null) },
                         singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     )
-
-                    // Sender filter field
                     OutlinedTextField(
                         value = senderInput,
                         onValueChange = {
                             senderInput = it
                             onSenderFilterChanged(it)
                         },
-                        label = { Text(stringResource(R.string.sender_filter_label)) },
-                        placeholder = { Text(stringResource(R.string.sender_filter_placeholder)) },
-                        supportingText = { Text(stringResource(R.string.sender_filter_helper)) },
+                        label = { Text("Sender Filter (Optional)") },
+                        supportingText = { Text("Leave blank to accept triggers from anyone") },
                         leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
                         singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
 
-            // 4. TEST ALARM ACTION BUTTON
+            // TESTING MODULE CARD
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = "Immediate Test",
+                        text = "Hardware Audio Test",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
                     Text(
-                        text = "Verify that STREAM_ALARM max volume, speaker playback, and vibration function properly on your hardware without sending an actual SMS.",
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                        modifier = Modifier.padding(top = 4.dp, bottom = 14.dp)
+                        text = "Test your alarm audio stream output and vibration patterns instantly.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp, bottom = 12.dp)
                     )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    Button(
+                        onClick = onTestAlarm,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Button(
-                            onClick = onTestAlarm,
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Icon(Icons.Default.PlayArrow, contentDescription = null)
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(stringResource(R.string.test_alarm_button), fontWeight = FontWeight.SemiBold)
-                        }
-
-                        if (settings.isAlarmActive) {
-                            FilledTonalButton(
-                                onClick = onStopAlarm,
-                                modifier = Modifier
-                                    .weight(0.7f)
-                                    .height(48.dp),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Icon(Icons.Default.Stop, contentDescription = null)
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(stringResource(R.string.stop_alarm_button))
-                            }
-                        }
+                        Icon(Icons.Default.PlayArrow, contentDescription = null)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Trigger Test Alarm", fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
 
-            // 5. PERMISSIONS & BATTERY OPTIMIZATION GUIDE CARD
+            // SYSTEM PERMISSIONS PANEL
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(20.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.Info,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(22.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(R.string.permissions_title),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 17.sp
-                        )
-                    }
-
                     Text(
-                        text = "Android 8 through Android 15 impose strict background execution limits. To guarantee the SMS BroadcastReceiver fires immediately even when your phone is in deep sleep (Doze mode):",
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "System Permissions",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
                     )
-
-                    // SMS Permission Item
                     PermissionStatusRow(
-                        title = stringResource(R.string.sms_permission_title),
-                        description = stringResource(R.string.sms_permission_desc),
-                        icon = Icons.Default.Sms,
+                        title = "SMS Interception",
+                        description = "Required to scan incoming messages.",
                         isGranted = hasSmsPermission,
-                        buttonText = stringResource(R.string.grant_permission),
                         onAction = onRequestSmsPermission
                     )
-
-                    // Notification Permission Item
                     PermissionStatusRow(
-                        title = stringResource(R.string.notification_permission_title),
-                        description = stringResource(R.string.notification_permission_desc),
-                        icon = Icons.Default.NotificationsActive,
+                        title = "Notifications & Alerts",
+                        description = "Required to host the persistent alarm service.",
                         isGranted = hasNotificationPermission,
-                        buttonText = stringResource(R.string.grant_permission),
                         onAction = onRequestNotificationPermission
                     )
-
-                    // Battery Optimization Item
                     PermissionStatusRow(
-                        title = stringResource(R.string.battery_opt_title),
-                        description = stringResource(R.string.battery_opt_desc),
-                        icon = Icons.Default.BatteryAlert,
+                        title = "Battery Exemption",
+                        description = "Prevents deep-sleep from blocking alarms.",
                         isGranted = isBatteryOptimizationIgnored,
-                        buttonText = stringResource(R.string.disable_battery_opt),
                         onAction = onRequestDisableBatteryOptimization
                     )
                 }
             }
 
-            // 6. LAST TRIGGER HISTORY / AUDIT CARD
+            // AUDIT TRAIL LOG
             if (settings.lastTriggeredTime > 0L) {
                 OutlinedCard(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(20.dp)
                 ) {
                     Column(
                         modifier = Modifier.padding(18.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
-                            text = "Last Trigger Audit",
+                            text = "Last Trigger Activity",
                             fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp,
+                            fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.primary
                         )
-                        val formattedDate = SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.getDefault())
-                            .format(Date(settings.lastTriggeredTime))
-                        Text(text = "Triggered At: $formattedDate", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                        val formattedDate = SimpleDateFormat("MMM dd, HH:mm:ss", Locale.getDefault()).format(Date(settings.lastTriggeredTime))
+                        Text(text = "Time: $formattedDate", fontSize = 12.sp)
                         if (settings.lastTriggeredSender.isNotBlank()) {
-                            Text(text = "From Sender: ${settings.lastTriggeredSender}", fontSize = 13.sp)
-                        }
-                        if (settings.lastTriggeredBody.isNotBlank()) {
-                            Text(
-                                text = "Message: \"${settings.lastTriggeredBody.take(120)}\"",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Text(text = "Sender: ${settings.lastTriggeredSender}", fontSize = 12.sp)
                         }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
@@ -452,75 +380,36 @@ fun AlarmScreen(
 fun PermissionStatusRow(
     title: String,
     description: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
     isGranted: Boolean,
-    buttonText: String,
     onAction: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .border(
-                1.dp,
-                if (isGranted) Color(0xFF86EFAC) else Color(0xFFFCA5A5),
-                RoundedCornerShape(12.dp)
-            )
-            .background(
-                if (isGranted) Color(0xFFF0FDF4) else Color(0xFFFEF2F2),
-                RoundedCornerShape(12.dp)
-            )
-            .padding(14.dp),
+            .border(1.dp, if (isGranted) Color(0xFF4ADE80).copy(alpha = 0.4f) else Color(0xFFF87171).copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+            .background(if (isGranted) Color(0xFFF0FDF4).copy(alpha = 0.6f) else Color(0xFFFEF2F2).copy(alpha = 0.6f), RoundedCornerShape(12.dp))
+            .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = if (isGranted) Color(0xFF16A34A) else Color(0xFFDC2626),
-            modifier = Modifier.size(28.dp)
-        )
-        Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 14.sp
-                )
-                Spacer(modifier = Modifier.width(6.dp))
+                Text(text = title, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                 if (isGranted) {
-                    Icon(
-                        Icons.Default.CheckCircle,
-                        contentDescription = "Granted",
-                        tint = Color(0xFF16A34A),
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF16A34A), modifier = Modifier.size(14.dp))
                 }
             }
-            Text(
-                text = description,
-                fontSize = 12.sp,
-                color = Color.DarkGray,
-                lineHeight = 16.sp
-            )
+            Text(text = description, fontSize = 11.sp, color = Color.Gray)
         }
-        Spacer(modifier = Modifier.width(8.dp))
         if (!isGranted) {
             Button(
                 onClick = onAction,
                 shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFBA1A1A)),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDC2626)),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp, vertical = 4.dp)
             ) {
-                Text(buttonText, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text("Grant", fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
-        } else {
-            Text(
-                text = "Active",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF16A34A),
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
         }
     }
 }
